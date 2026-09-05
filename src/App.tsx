@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { X } from 'lucide-react';
 import { Toaster } from 'sonner';
 import { Layout } from '@/components/layout/Layout';
 import {
@@ -78,7 +79,13 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
-      <Toaster position="top-right" richColors />
+      <Toaster
+        position="top-right"
+        richColors
+        closeButton
+        icons={{ close: <X className="h-4 w-4" /> }}
+        toastOptions={{ closeButton: true }}
+      />
     </QueryClientProvider>
   );
 }

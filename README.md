@@ -12,37 +12,50 @@ Modern React ecommerce storefront with admin dashboard.
 - **TanStack Query** — Server state management
 - **Zustand** — Cart and auth state
 - **React Hook Form** + **Zod** — Form validation
+- **Sonner** — Toast notifications (with dismiss/close icon)
 - **Stripe** — Checkout redirect
 - **Axios** — HTTP client with JWT interceptors
 
 ## Prerequisites
 
 - Node.js 18+
-- Backend API running (see [Ecommerce-Backend](https://github.com/srikanth13122002/Ecommerce-Backend))
+- [Ecommerce-Backend](https://github.com/srikanth13122002/Ecommerce-Backend) running locally (PostgreSQL + API on port `3000`)
 
 ## Local Setup
 
-1. Copy environment file:
+### 1. Start the backend first
 
-   ```bash
-   cp .env.example .env
-   ```
+In the backend repo:
 
-2. Update `.env`:
+```bash
+cd Ecommerce-Backend
+cp .env.example .env
+npm install
+docker compose up -d
+npm run prisma:push
+npm run seed
+npm run start:dev
+```
 
-   ```env
-   VITE_API_URL=http://localhost:3000/api/v1
-   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_key
-   ```
+Backend runs at `http://localhost:3000/api/v1`.
 
-3. Install and run:
+### 2. Start the frontend
 
-   ```bash
-   npm install
-   npm run dev
-   ```
+```bash
+cd Ecommerce-frontend
+cp .env.example .env
+npm install
+npm run dev
+```
 
 App runs at `http://localhost:5173`
+
+### Environment file
+
+```env
+VITE_API_URL=http://localhost:3000/api/v1
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_key
+```
 
 ## Environment Variables
 
@@ -71,6 +84,8 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
 | `/products/:slug` | Product detail with reviews |
 | `/cart` | Shopping cart |
 | `/checkout` | Shipping form + Stripe payment |
+| `/checkout/success` | Payment success page |
+| `/checkout/cancel` | Payment cancelled page |
 | `/login` / `/register` | Customer authentication |
 | `/account` | Order history |
 
@@ -133,7 +148,7 @@ Output is in `dist/`.
 
 ### Related backend repo
 
-The NestJS API lives in a separate repository:
+The NestJS API uses **PostgreSQL + Prisma** and lives in a separate repository:
 
 [github.com/srikanth13122002/Ecommerce-Backend](https://github.com/srikanth13122002/Ecommerce-Backend)
 

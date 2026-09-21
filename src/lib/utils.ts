@@ -15,7 +15,7 @@ export function formatPrice(price: number) {
 export function getImageUrl(path: string) {
   if (!path) return 'https://picsum.photos/seed/placeholder/600/600';
   if (path.startsWith('http')) return path;
-  const apiUrl = import.meta.env.VITE_API_URL || 'http://32.236.247.85/:3000/api/v1';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://32.236.247.85:3000/api/v1';
   const base = apiUrl.replace('/api/v1', '');
   return `${base}${path}`;
 }

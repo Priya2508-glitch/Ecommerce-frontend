@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { toast } from 'sonner';
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email'),
+  gmail: z.string().email('Invalid email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -71,10 +71,10 @@ export function LoginPage() {
           <CardContent>
             <form onSubmit={handleSubmit((data) => mutation.mutate(data))} className="space-y-5">
               <div>
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="you@example.com" {...register('email')} />
-                {errors.email && (
-                  <p className="text-sm text-destructive mt-1">{errors.email.message}</p>
+                <Label htmlFor="email">Gmail</Label>
+                <Input id="gmail" type="email" placeholder="you@gmail.com" {...register('gmail')} />
+                {errors.gmail && (
+                  <p className="text-sm text-destructive mt-1">{errors.gmail.message}</p>
                 )}
               </div>
               <div>

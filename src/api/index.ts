@@ -15,8 +15,13 @@ import type {
 export const authApi = {
   register: (data: { gmail: string; password: string; name: string }) =>
     api.post<AuthResponse>('/auth/register', data).then((r) => r.data),
-  login: (data: { gmail: string; password: string }) =>
-    api.post<AuthResponse>('/auth/login', data).then((r) => r.data),
+  login: (data: { gmail: string; password: string }) => {
+    console.log('Login input:', data);
+
+    return api
+      .post<AuthResponse>('/auth/login', data)
+      .then((r) => r.data);
+  },
   me: () => api.get<User>('/auth/me').then((r) => r.data),
 };
 

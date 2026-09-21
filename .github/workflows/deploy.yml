@@ -14,36 +14,50 @@ on:
           
 
 jobs:
+
   build-and-test:
     name: Build and Test Frontend
     runs-on: ubuntu-latest
 
     steps:
 
-      # 1. Checkout source code
+      # 1. Get the source code
       - name: Checkout source code
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js
+
+      # 2. Install Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
 
+
       # 3. Install dependencies
       - name: Install dependencies
         run: npm ci
 
+
       # 4. Run lint
       - name: Run lint
-        run: npm run lint
+        run: npm run lint --if-present
 
-      # 5. Build frontend
+
+      # 5. Run tests
+      - name: Run tests
+        run: npm test --if-present
+
+
+      # 6. Build React/Vite application
       - name: Build frontend
         run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
 
-      # 6. Upload build files
+
+      # 7. Save dist folder
       - name: Upload frontend build
         uses: actions/upload-artifact@v4
         with:
@@ -58,15 +72,16 @@ jobs:
 
     steps:
 
-      # 1. Download build files
+      # 1. Download dist folder
       - name: Download frontend build
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: dist
 
-      # 2. Copy files to EC2
-      - name: Deploy to EC2
+
+      # 2. Copy dist files to EC2
+      - name: Copy frontend files to EC2
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -76,8 +91,9 @@ jobs:
           source: "dist/*"
           target: "/var/www/ecommerce-frontend"
 
-      # 3. Restart Nginx
-      - name: Restart Nginx
+
+      # 3. Reload Nginx
+      - name: Reload Nginx
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -85,5 +101,5 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            sudo nginx -t
             sudo systemctl reload nginx
-            sudo systemctl status nginx --no-pager

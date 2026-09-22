@@ -1,0 +1,112 @@
+name: Deploy Frontend
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select environment"
+        required: true
+        default: "deploy-frontend"
+        type: choice
+        options:
+          - adding-feature
+          - main
+          - deploy-frontend
+
+jobs:
+
+  build-and-test:
+    name: Build and Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Get the source code
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # 2. Install Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # 3. Remove previous build and dependencies
+      - name: Clean previous build
+        run: |
+          rm -rf dist
+          rm -rf node_modules
+
+      # 4. Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # 5. Run lint
+      - name: Run lint
+        run: npm run lint --if-present
+
+      # 6. Run tests
+      - name: Run tests
+        run: npm test --if-present
+
+      # 7. Build React/Vite application
+      - name: Build frontend
+        run: npm run build
+
+      # 8. Save dist folder
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: dist/
+
+
+  deploy:
+    name: Deploy Frontend to EC2
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Download dist folder
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: dist
+
+      # 2. Copy dist folder to EC2
+      - name: Copy dist folder to EC2
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "dist/*"
+          target: "/home/ubuntu/frontend-build"
+
+      # 3. Copy files to Nginx directory
+      - name: Deploy files to Nginx directory
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            sudo rm -rf /var/www/ecommerce-frontend/*
+            sudo cp -r /home/ubuntu/frontend-build/* /var/www/ecommerce-frontend/
+
+      # 4. Reload Nginx
+      - name: Reload Nginx
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            sudo nginx -t
+            sudo systemctl reload nginx

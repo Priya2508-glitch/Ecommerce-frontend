@@ -15,62 +15,106 @@ on:
 
 jobs:
 
-  deploy:
-    name: Clone and Deploy Frontend
+
+  build-and-test:
+    name: Build and Test Frontend
     runs-on: ubuntu-latest
+
 
     steps:
 
-      # 1. Connect to EC2 and clone frontend using GitHub SSH
-      - name: Clone and deploy frontend
+
+      # 1. Get the source code
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+
+      # 2. Install Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+
+      # 3. Remove previous build and dependencies
+      - name: Clean previous build
+        run: |
+          rm -rf dist
+          rm -rf node_modules
+
+
+      # 4. Install dependencies
+      - name: Install dependencies
+        run: npm i
+
+
+      # 7. Build React/Vite application
+      - name: Build frontend
+        run: npm run build
+# 8. Save dist folder
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: dist/
+
+
+
+
+  deploy:
+    name: Deploy Frontend to EC2
+    needs: build-and-test
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+
+      # 1. Download dist folder
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: dist
+
+
+      # 2. Copy dist folder to EC2
+      - name: Copy dist folder to EC2
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          source: "dist/*"
+          target: "/home/ubuntu/frontend-build"
+
+
+      # 3. Copy files to Nginx directory
+      - name: Deploy files to Nginx directory
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
-
           script: |
-            set -e
-
-            echo "Connected to EC2"
-
-            # Go to project directory
-            cd ~/my_project
-
-            # Remove old frontend source
-            rm -rf Ecommerce-frontend
-
-            # Clone frontend from GitHub using SSH
-            git clone -b ${{ inputs.environment }} \
-              git@github.com:Priya2508-glitch/Ecommerce-frontend.git \
-              Ecommerce-frontend
-
-            # Go to frontend project
-            cd Ecommerce-frontend
-
-            # Install dependencies
-            npm ci
-
-            # Run lint if available
-            npm run lint --if-present
-
-            # Build React/Vite application
-            npm run build
-
-            # Remove old frontend files from Nginx
             rm -rf /var/www/ecommerce-frontend/*
+            cp -r /home/ubuntu/frontend-build/* /var/www/ecommerce-frontend/
 
-            # Copy new build
-            cp -r dist/* /var/www/ecommerce-frontend/
 
-            # Set ownership
-            chown -R www-data:www-data /var/www/ecommerce-frontend
-
-            # Test Nginx configuration
+      # 4. Reload Nginx
+      - name: Reload Nginx
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
             sudo nginx -t
-
-            # Reload Nginx
             sudo systemctl reload nginx
 
-            echo "Frontend deployment completed successfully"
+
+  

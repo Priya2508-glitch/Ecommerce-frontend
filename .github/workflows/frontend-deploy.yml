@@ -45,19 +45,14 @@ jobs:
           rm -rf node_modules/
           ls -la
 
-
-      # 4. Install dependencies
+      # 4.  Install dependencies
       - name: Install dependencies
-        run: |
-          cd my_project/Ecommerce-frontend
-          npm i
+        run: npm i
 
 
       # 7. Build React/Vite application
       - name: Build frontend
-        run: |
-          cd my_project/Ecommerce-frontend
-          npm run build
+        run:  npm run build
 
 
   deploy:

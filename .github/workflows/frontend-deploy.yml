@@ -55,8 +55,9 @@ jobs:
 
       # 7. Build React/Vite application
       - name: Build frontend
-        run: npm run build
-          ls -la
+        run: |
+          cd my_project/Ecommerce-frontend
+          npm run build
 
 
   deploy:
@@ -85,7 +86,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           source: "dist/*"
-          target: "/home/ubuntu/frontend-build"
+          target: "/home/ubuntu/my_project/Ecommerce-frontend/"
 
 
       # 3. Copy files to Nginx directory
@@ -98,7 +99,7 @@ jobs:
           port: 22
           script: |
             rm -rf /var/www/ecommerce-frontend/*
-            cp -r /home/ubuntu/frontend-build/* /var/www/ecommerce-frontend/
+            cp -r /home/ubuntu/my_project/Ecommerce-frontend/* /var/www/ecommerce-frontend/
 
 
       # 4. Reload Nginx

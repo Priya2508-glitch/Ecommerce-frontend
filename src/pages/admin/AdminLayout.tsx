@@ -44,8 +44,8 @@ export function AdminLayout() {
             <Settings className="h-5 w-5 text-white" />
           </div>
           <div>
-            <p className="font-extrabold text-white text-lg leading-tight">ShopVerse</p>
-            <p className="text-xs text-cyan-400 font-semibold tracking-wider uppercase">Admin gonsole</p>
+            <p className="font-extrabold text-white text-lg leading-tight">Shoperse</p>
+            <p className="text-xs text-cyan-400 font-semibold tracking-wider uppercase">Admingonsole</p>
           </div>
         </div>
       </div>

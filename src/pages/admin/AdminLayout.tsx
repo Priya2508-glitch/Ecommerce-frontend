@@ -45,7 +45,7 @@ export function AdminLayout() {
           </div>
           <div>
             <p className="font-extrabold text-white text-lg leading-tight">ShopVerse</p>
-            <p className="text-xs text-cyan-400 font-semibold tracking-wider uppercase">Admin Console</p>
+            <p className="text-xs text-cyan-400 font-semibold tracking-wider uppercase">Admin gonsole</p>
           </div>
         </div>
       </div>
